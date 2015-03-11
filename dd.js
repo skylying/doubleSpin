@@ -73,21 +73,25 @@
 	{
 		this.node = node;
 
-		this.speedMap = {
-			fast: '2s',
-			medium: '4s',
-			slow: '6s'
+		// speed setter
+		this.config = {
+			set speed(speed) {
+				switch (speed) {
+					case 'fast':
+						return this.animationSpeed = '2s';
+					case 'medium':
+						return this.animationSpeed = '4s';
+					case 'slow':
+						return this.animationSpeed = '6s';
+				}
+			}
 		};
 
-		this.myname = 'jack';
-
-		this.config = (function() {
-			return extendObj(config || {}, defaultConfig);
-		}());
+		// Merge config
+		extendObj(this.config, defaultConfig);
 	}
 
 	DoubleSpin.prototype = {
-
 		spin: function()
 		{
 			var leftSpinner = createElement('div', {className: 'spinner-inner top'}),
@@ -135,7 +139,7 @@
 					return '{' +
 						'background:' + c.topColor +';' +
 						'margin-left:' + (c.dimension / 2) + 'px;' +
-						'-webkit-animation: leftspin ' + this.speedMap[c.speed] + ' linear infinite;' +
+						'-webkit-animation: leftspin ' + c.animationSpeed + ' linear infinite;' +
 						'z-index: 100;' +
 						'}';
 
@@ -144,7 +148,7 @@
 						'background:' + c.bottomColor + ';' +
 						'margin-left:' + (c.dimension / 2) + 'px;' +
 						'-webkit-transform: scale(0.4);' +
-						'-webkit-animation: rightspin ' + this.speedMap[c.speed] + ' linear infinite;z-index: 1;' +
+						'-webkit-animation: rightspin ' + c.animationSpeed + ' linear infinite;z-index: 1;' +
 						'}';
 			}
 		}
