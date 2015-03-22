@@ -11,7 +11,7 @@
 <h1>Hello world!</h1>
 
 <div id="content">
-	Contenta
+	Hello~
 </div>
 
 <div id="spinner">
@@ -22,7 +22,12 @@
 
 	var testElement = document.getElementById('spinner');
 
-	var doubleSpinner = new DoubleSpin(document.getElementById('spinner'));
+	//console.log(testElement);
+
+	var doubleSpinner = new DoubleSpin(document.getElementById('spinner'), {
+		dimension: 100,
+		speed: 'fast'
+	});
 
 	doubleSpinner.spin();
 
