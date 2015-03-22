@@ -19,6 +19,7 @@
 		speed: 'fast'
 	};
 
+	// Initial style
 	var styleList = {
 		spinner: {
 			"position": 'absolute',
@@ -29,7 +30,7 @@
 			"width": '100px',
 			"height": '100px',
 			"position": 'absolute',
-			"BorderRadius": '50%',
+			"borderRadius": '50%',
 			"marginLeft": '-50px',
 			"marginTop": '-50px'
 		},
@@ -81,11 +82,29 @@
 		return parent;
 	}
 
+	// Create stylesheet object
 	var sheet = (function() {
 		var el = createElement('style', {type : 'text/css'});
 		insert(document.getElementsByTagName('head')[0], el);
 		return el.sheet || el.styleSheet;
 	}());
+
+	// Get current vendor prefix
+	var prefix = (function () {
+		var styles = window.getComputedStyle(document.documentElement, ''),
+			pre = (Array.prototype.slice
+				.call(styles)
+				.join('')
+				.match(/-(moz|webkit|ms)-/) || (styles.OLink === '' && ['', 'o'])
+			)[1],
+			dom = ('WebKit|Moz|MS|O').match(new RegExp('(' + pre + ')', 'i'))[1];
+		return {
+			dom: dom,
+			lowercase: pre,
+			css: '-' + pre + '-',
+			js: pre[0].toUpperCase() + pre.substr(1)
+		};
+	})();
 
 	function extendObj(base /* ext1, ext2, ....*/)
 	{
@@ -147,6 +166,9 @@
 		this.node = node;
 		this.config = {};
 
+		// Check css3 animation support
+		this.supportAnimation = vendor(createElement(), 'animation');
+
 		//speed setter
 		this.config = {
 			set speed(speed) {
@@ -170,12 +192,17 @@
 			}
 		};
 
-		addStyle(node, styleList.spinner);
-
 		// Merge config
 		extendObj(this.config, config, defaultConfig);
 
-		// Set style
+		// Create 2 spinner
+		this.topSpinner = createElement('div', {className: 'spinner-inner top'});
+		this.bottomSpinner = createElement('div', {className: 'spinner-inner bottom'});
+
+		insert(this.node, this.topSpinner, this.bottomSpinner);
+		addStyle(node, styleList.spinner);
+
+		// Set initial style
 		var c = this.config;
 
 		styleList.spinnerInner.width = styleList.spinnerInner.height = c.dimension + 'px';
@@ -183,6 +210,11 @@
 		styleList.top.animationDuration = styleList.bottom.animationDuration = c.animationSpeed;
 		styleList.top.background = c.topColor;
 		styleList.bottom.background = c.bottomColor;
+
+		var s = styleList;
+
+		addStyle(this.topSpinner, s.spinnerInner, s.top);
+		addStyle(this.bottomSpinner, s.spinnerInner, s.bottom);
 	}
 
 	DoubleSpin.prototype = {
@@ -191,11 +223,36 @@
 			var topSpinner = createElement('div', {className: 'spinner-inner top'}),
 				bottomSpinner = createElement('div', {className: 'spinner-inner bottom'}),
 				s = styleList;
+		addKeyframes: function() {
 
-			addStyle(topSpinner, s.spinnerInner, s.top);
-			addStyle(bottomSpinner, s.spinnerInner, s.bottom);
+			var p = prefix.css,
+				offset = (this.config.dimension / 2);
 
-			insert(this.node, topSpinner, bottomSpinner);
+			// Add leftspin
+			sheet.insertRule(
+				'@' + p + 'keyframes leftspin {' +
+					'0% {' + p + 'transform: scale(1) translateX(0px);}' +
+					'25%{' + p + 'transform: scale(0.7) translateX(-' + offset + 'px);z-index : 10;}' +
+					'26% {z-index : 1;}' +
+					'50% {' + p + 'transform: scale(0.4) translateX(0px);}' +
+					'75% {' + p + 'transform: scale(0.7) translateX(' + offset + 'px);}' +
+					'76% {z-index: 10;}' +
+					'100%{' + p + 'transform: scale(1) translateX(0px);' +
+				'}'
+			, sheet.cssRules.length);
+
+			// Add rightspin
+			sheet.insertRule(
+				'@' + p + 'keyframes rightspin {' +
+					'0% {' + p + 'transform: scale(0.4) translateX(0px);}' +
+					'25%{' + p + 'transform: scale(0.7) translateX(' + offset + 'px);z-index: 1;}' +
+					'26% {z-index: 10;}' +
+					'50% {' + p + 'transform: scale(1) translateX(0px);}' +
+					'75% {' + p + 'transform: scale(0.7) translateX(-' + offset + 'px);z-index: 10;}' +
+					'76% {z-index: 1;}' +
+					'100% {' + p + 'transform: scale(0.4) translateX(0px);}' +
+				'}'
+			, sheet.cssRules.length);
 		}
 	};
 
