@@ -220,9 +220,55 @@
 	DoubleSpin.prototype = {
 		spin: function()
 		{
-			var topSpinner = createElement('div', {className: 'spinner-inner top'}),
-				bottomSpinner = createElement('div', {className: 'spinner-inner bottom'}),
-				s = styleList;
+			var self = this;
+
+			// this.supportAnimation === undefined
+			if ( 1 == 1) {
+
+				var tl = 0,             // topSpinner left
+					tt = 0,
+					td = -1,            // topSpinner direction
+					tw = 100,           // topSpinner width
+					th = 100,           // topSpinner height
+					dS = 100 * 0.006;   // delta size
+
+
+				var interval = setInterval(function() {
+
+					// move left
+					if (td == -1) {
+						if (tl > -50) {
+							tl -= 2;
+						} else {
+							// revert direction to right
+							td = 1;
+							tl = -50;
+						}
+					} else if (td == 1) {
+						if (tl < 50) {
+							tl += 2;
+						} else {
+							// revert direction to left
+							td = -1;
+							tl = 50;
+						}
+					}
+
+					self.moveTo(self.topSpinner, tl, tt, tw, th)
+
+				}, 20);
+
+			} else {
+
+				// Add keyframes
+				//this.addKeyframes();
+
+			}
+		},
+		moveTo: function(node, l, t, w, h) {
+
+			node.style.left = l + 'px';
+		},
 		addKeyframes: function() {
 
 			var p = prefix.css,
