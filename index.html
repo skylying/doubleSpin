@@ -23,12 +23,7 @@
 
 	var testElement = document.getElementById('spinner');
 
-	console.log(document.createElement('div').style);
-
-	var doubleSpinner = new DoubleSpin(document.getElementById('spinner'), {
-		dimension: 100,
-		speed: 'fast'
-	});
+	var doubleSpinner = new DoubleSpin(document.getElementById('spinner'));
 
 	doubleSpinner.spin();
 

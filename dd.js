@@ -1,19 +1,15 @@
-// done TODO: Merge default config
-// done TODO: 避免全局污染, 改用 self-execute function 寫
-// done TODO: Cross browser css support
-// done TODO: add node to constructor
-// done TODO: Insert config to style list
-//TODO: Insert @keyframe
-//TODO: Add user agent to define browser
-//TODO: Insert IE css support
-//TODO: setInterval() alternative
+/**
+ * Author : Tim Lin
+ * mail : linsuitm@gmail.com
+ * Date : 2015/4/6
+ */
 
 (function()
 {
 	var prefixList = ['webkit', 'Moz', 'O', 'ms'];
 
 	var defaultConfig = {
-		dimension: 100,
+		size: 100,
 		topColor: '#FF0000',
 		bottomColor: '#008000',
 		speed: 'fast'
@@ -195,26 +191,28 @@
 		// Merge config
 		extendObj(this.config, config, defaultConfig);
 
-		// Create 2 spinner
-		this.topSpinner = createElement('div', {className: 'spinner-inner top'});
-		this.bottomSpinner = createElement('div', {className: 'spinner-inner bottom'});
+		this.config.dimension = Math.min(this.config.size, 140);
+		this.config.dimension = Math.max(this.config.dimension, 70);
 
-		insert(this.node, this.topSpinner, this.bottomSpinner);
+		// Create 2 spinner
+		this.topDiv = createElement('div', {className: 'spinner-inner top'});
+		this.bottomDiv = createElement('div', {className: 'spinner-inner bottom'});
+
+		insert(this.node, this.topDiv, this.bottomDiv);
 		addStyle(node, styleList.spinner);
 
 		// Set initial style
-		var c = this.config;
+		var c = this.config,
+			s = styleList;
 
-		styleList.spinnerInner.width = styleList.spinnerInner.height = c.dimension + 'px';
-		styleList.spinnerInner.marginLeft = styleList.spinnerInner.marginTop = '-' + (parseInt(c.dimension) / 2) + 'px';
-		styleList.top.animationDuration = styleList.bottom.animationDuration = c.animationSpeed;
-		styleList.top.background = c.topColor;
-		styleList.bottom.background = c.bottomColor;
+		s.spinnerInner.width = s.spinnerInner.height = c.dimension + 'px';
+		s.spinnerInner.marginLeft = s.spinnerInner.marginTop = '-' + (parseInt(c.dimension) / 2) + 'px';
+		s.top.animationDuration = s.bottom.animationDuration = c.animationSpeed;
+		s.top.background = c.topColor;
+		s.bottom.background = c.bottomColor;
 
-		var s = styleList;
-
-		addStyle(this.topSpinner, s.spinnerInner, s.top);
-		addStyle(this.bottomSpinner, s.spinnerInner, s.bottom);
+		addStyle(this.topDiv, s.spinnerInner, s.top);
+		addStyle(this.bottomDiv, s.spinnerInner, s.bottom);
 	}
 
 	DoubleSpin.prototype = {
@@ -222,57 +220,81 @@
 		{
 			var self = this;
 
-			// this.supportAnimation === undefined
-			if ( 1 == 1) {
+			// Animation not supported, use setTimeout instead
+			if ( this.supportAnimation === undefined ) {
 
-				var tl = 0,             // topSpinner left
-					tt = 0,
-					td = -1,            // topSpinner direction
-					tw = 100,           // topSpinner width
-					th = 100,           // topSpinner height
-					dS = 100 * 0.006;   // delta size
+				var self = this,
+					offset = 0,
+					dir = true,
+					neg = true,
+					fps = 50 / 1000,
+					dL = 2,
+					minScale = 0.4,
+					midScale = 0.7,
+					maxScale = 1,
+					z = true,
+					bound = self.config.dimension / 2;
 
+				var dS = (maxScale - midScale) * dL / bound;
 
-				var interval = setInterval(function() {
+				(function move() {
 
-					// move left
-					if (td == -1) {
-						if (tl > -50) {
-							tl -= 2;
-						} else {
-							// revert direction to right
-							td = 1;
-							tl = -50;
-						}
-					} else if (td == 1) {
-						if (tl < 50) {
-							tl += 2;
-						} else {
-							// revert direction to left
-							td = -1;
-							tl = 50;
-						}
+					if (dir == true) {
+						offset+=dL;
+					} else {
+						offset-=dL;
 					}
 
-					self.moveTo(self.topSpinner, tl, tt, tw, th)
+					if (offset >= bound && dir == true) {
+						dir = !dir;
+						z = !z;
+					} else if (offset <= 0 && dir == false) {
+						dir = !dir;
+						neg = !neg
+					};
 
-				}, 20);
+					if (!neg) {
+						maxScale+=dS;
+						minScale-=dS;
+					} else {
+						maxScale-=dS;
+						minScale+=dS;
+					}
+
+					self.moveTopDiv(offset, maxScale, neg, z);
+					self.moveBottomDiv(offset, minScale, neg, z);
+
+					self.timeout = setTimeout(move, 1/fps);
+
+				}());
 
 			} else {
 
-				// Add keyframes
-				//this.addKeyframes();
-
+				this.addKeyframes();
 			}
 		},
-		moveTo: function(node, l, t, w, h) {
+		moveTopDiv: function(left, scale, neg, z) {
+			
+			var o = neg ? '-' : '';
+			var p = z ? '' : '-';
 
-			node.style.left = l + 'px';
+			this.topDiv.style[prefix.css + 'transform'] = 'translateX(' + o + left + 'px) scale(' + scale +')';
+			this.topDiv.style.zIndex = p + 10;
+		},
+		moveBottomDiv: function(left, scale, neg, z) {
+
+			var o = neg ? '' : '-';
+			var p = z ? '-' : '';
+
+			this.bottomDiv.style[prefix.css + 'transform'] = 'translateX(' + o + left + 'px) scale(' + scale +')';
+			this.bottomDiv.style.zIndex = p + 10;
 		},
 		addKeyframes: function() {
 
 			var p = prefix.css,
 				offset = (this.config.dimension / 2);
+
+				console.log(offset);
 
 			// Add leftspin
 			sheet.insertRule(
