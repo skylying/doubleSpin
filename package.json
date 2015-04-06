@@ -1,0 +1,26 @@
+{
+  "name": "doubleSpin",
+  "version": "1.0.0",
+  "description": "double circle loading icon",
+  "main": "dd.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/skylying/doubleSpin.git"
+  },
+  "keywords": [
+    "doubleSpin"
+  ],
+  "author": "Tim Lin",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/skylying/doubleSpin/issues"
+  },
+  "homepage": "https://github.com/skylying/doubleSpin",
+  "devDependencies": {
+    "gulp-uglify": "~1.1.0",
+    "gulp-rename": "~1.2.2"
+  }
+}
