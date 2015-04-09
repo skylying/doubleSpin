@@ -17,11 +17,6 @@
 
 	// Initial style
 	var styleList = {
-		spinner: {
-			"position": 'absolute',
-			"left": '50%',
-			"top": '50%'
-		},
 		spinnerInner : {
 			"width": '100px',
 			"height": '100px',
@@ -159,6 +154,10 @@
 	 */
 	function DoubleSpin(node, config)
 	{
+		if (this.node !== undefined) {
+			this.node.parentNode.removeChild(this.node);
+		};
+
 		this.node = node;
 		this.config = {};
 
@@ -199,7 +198,6 @@
 		this.bottomDiv = createElement('div', {className: 'spinner-inner bottom'});
 
 		insert(this.node, this.topDiv, this.bottomDiv);
-		addStyle(node, styleList.spinner);
 
 		// Set initial style
 		var c = this.config,
@@ -321,6 +319,9 @@
 					'100% {' + p + 'transform: scale(0.4) translateX(0px);}' +
 				'}'
 			, sheet.cssRules.length);
+		},
+		stop: function() {
+			
 		}
 	};
 
