@@ -6,10 +6,12 @@
 
 (function()
 {
+	var sizeConst = 100;
+
 	var prefixList = ['webkit', 'Moz', 'O', 'ms'];
 
 	var defaultConfig = {
-		size: 100,
+		size: 1,
 		topColor: '#FF0000',
 		bottomColor: '#008000',
 		speed: 'fast'
@@ -146,6 +148,23 @@
 	}
 
 	/**
+	 * Sanitize negative, or over 1 value
+	 *
+	 * @param size
+	 * @returns {*}
+	 */
+	function sanitizeSize(size)
+	{
+		var abs = Math.abs(size);
+
+		if (abs === 0 || abs > 1) {
+			return 1;
+		} else {
+			return size;
+		}
+	}
+
+	/**
 	 * Constructor
 	 *
 	 * @param node
@@ -156,7 +175,7 @@
 	{
 		if (this.node !== undefined) {
 			this.node.parentNode.removeChild(this.node);
-		};
+		}
 
 		this.node = node;
 		this.config = {};
@@ -168,20 +187,20 @@
 		this.config = {
 			set speed(speed) {
 
-				if (this.animationSpeed !== undefined) return;
+				if (this.animationDuration !== undefined) return;
 
 				switch (speed) {
 					case 'fast':
-						return this.animationSpeed = '2s';
+						return this.animationDuration = '2s';
 						break;
 					case 'medium':
-						return this.animationSpeed = '4s';
+						return this.animationDuration = '4s';
 						break;
 					case 'slow':
-						return this.animationSpeed = '6s';
+						return this.animationDuration = '6s';
 						break;
 					default :
-						return this.animationSpeed = '2s';
+						return this.animationDuration = '2s';
 						break;
 				}
 			}
@@ -190,27 +209,11 @@
 		// Merge config
 		extendObj(this.config, config, defaultConfig);
 
-		this.config.dimension = Math.min(this.config.size, 140);
-		this.config.dimension = Math.max(this.config.dimension, 70);
-
 		// Create 2 spinner
 		this.topDiv = createElement('div', {className: 'spinner-inner top'});
 		this.bottomDiv = createElement('div', {className: 'spinner-inner bottom'});
 
-		insert(this.node, this.topDiv, this.bottomDiv);
-
-		// Set initial style
-		var c = this.config,
-			s = styleList;
-
-		s.spinnerInner.width = s.spinnerInner.height = c.dimension + 'px';
-		s.spinnerInner.marginLeft = s.spinnerInner.marginTop = '-' + (parseInt(c.dimension) / 2) + 'px';
-		s.top.animationDuration = s.bottom.animationDuration = c.animationSpeed;
-		s.top.background = c.topColor;
-		s.bottom.background = c.bottomColor;
-
-		addStyle(this.topDiv, s.spinnerInner, s.top);
-		addStyle(this.bottomDiv, s.spinnerInner, s.bottom);
+		this.mergeStyle();
 	}
 
 	DoubleSpin.prototype = {
@@ -221,8 +224,7 @@
 			// Animation not supported, use setTimeout instead
 			if ( this.supportAnimation === undefined ) {
 
-				var self = this,
-					offset = 0,
+				var offset = 0,
 					dir = true,
 					neg = true,
 					fps = 50 / 1000,
@@ -287,12 +289,37 @@
 			this.bottomDiv.style[prefix.css + 'transform'] = 'translateX(' + o + left + 'px) scale(' + scale +')';
 			this.bottomDiv.style.zIndex = p + 10;
 		},
+		mergeStyle: function(config) {
+
+			var c = config || this.config,
+				s = styleList;
+
+			var dimension = sizeConst * sanitizeSize(c.size);
+
+			if (!c.animationDuration) {
+				this.config.speed = c.speed;
+			}
+
+			s.spinnerInner.width = s.spinnerInner.height = dimension + 'px';
+			s.spinnerInner.marginLeft = s.spinnerInner.marginTop = '-' + (parseInt(dimension) / 2) + 'px';
+			s.top.animationDuration = s.bottom.animationDuration = this.config.animationDuration;
+			s.top.background = c.topColor;
+			s.bottom.background = c.bottomColor;
+
+			addStyle(this.topDiv, s.spinnerInner, s.top);
+			addStyle(this.bottomDiv, s.spinnerInner, s.bottom);
+
+			insert(this.node, this.topDiv, this.bottomDiv);
+
+			// Export to this object
+			this.config.dimension = dimension;
+
+			return this;
+		},
 		addKeyframes: function() {
 
 			var p = prefix.css,
 				offset = (this.config.dimension / 2);
-
-				console.log(offset);
 
 			// Add leftspin
 			sheet.insertRule(
@@ -319,9 +346,22 @@
 					'100% {' + p + 'transform: scale(0.4) translateX(0px);}' +
 				'}'
 			, sheet.cssRules.length);
+			console.log(sheet);
 		},
-		stop: function() {
-			
+		removeKeyframes: function() {
+
+			var length = sheet.rules.length;
+
+			for (var i = 0; i < length; i++) {
+				sheet.deleteRule(0);
+			}
+
+			return this;
+		},
+		updateStyle: function(config) {
+
+			this.mergeStyle(config).removeKeyframes().spin();
+
 		}
 	};
 

@@ -78,34 +78,37 @@
 
 <script type="text/javascript">
 
-	var defaultConfig = (function() {
-		return {
-			size: 100,
-			topColor: '#ddd',
-			bottomColor: '#008000',
-			speed: 'fast'
-		};
-	}());
-	
-	//var dd = new DoubleSpin(document.getElementById('spinner'), config);
-	//
+	window.onload = function() {
 
-	// Convert nodelist
-	Array.prototype.slice.call(document.getElementsByName('speed')).forEach(function(radio) {
-		radio.addEventListener('change', function() {
-			var config = defaultConfig;
-			config.speed = this.value;
-			init(config);
-		})
-	});
+		var defaultConfig = (function() {
+			return {
+				size: 1,
+				topColor: '#FF0000',
+				bottomColor: '#008000',
+				speed: 'fast'
+			};
+		}());
 
-	function init(config)
-	{
-		var config = config || {};
-		new DoubleSpin(document.getElementById('spinner'), config).spin();
-	}
+		var spinner = new DoubleSpin(document.getElementById('spinner'), defaultConfig);
 
-	init();
+		// Convert nodelist
+		Array.prototype.slice.call(document.getElementsByName('speed')).forEach(function(radio) {
+			radio.addEventListener('change', function() {
+				var config = defaultConfig;
+				config.speed = this.value;
+				spinner.updateStyle({
+					size: 0.5,
+					topColor: '#ddd',
+					bottomColor: '#008000',
+					speed: 'fast'
+				});
+			})
+		});
+
+		// Start spin
+		spinner.spin();
+
+	};
 
 </script>
 </body>
