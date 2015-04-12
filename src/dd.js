@@ -17,6 +17,12 @@
 		speed: 'fast'
 	};
 
+	var speedMap = {
+		"slow": '4s',
+		"medium": '3s',
+		"fast": '2s'
+	};
+
 	// Initial style
 	var styleList = {
 		spinnerInner : {
@@ -183,29 +189,6 @@
 		// Check css3 animation support
 		this.supportAnimation = vendor(createElement(), 'animation');
 
-		//speed setter
-		this.config = {
-			set speed(speed) {
-
-				if (this.animationDuration !== undefined) return;
-
-				switch (speed) {
-					case 'fast':
-						return this.animationDuration = '2s';
-						break;
-					case 'medium':
-						return this.animationDuration = '4s';
-						break;
-					case 'slow':
-						return this.animationDuration = '6s';
-						break;
-					default :
-						return this.animationDuration = '2s';
-						break;
-				}
-			}
-		};
-
 		// Merge config
 		extendObj(this.config, config, defaultConfig);
 
@@ -213,7 +196,7 @@
 		this.topDiv = createElement('div', {className: 'spinner-inner top'});
 		this.bottomDiv = createElement('div', {className: 'spinner-inner bottom'});
 
-		this.mergeStyle();
+		this.calculateStyle();
 	}
 
 	DoubleSpin.prototype = {
@@ -289,20 +272,16 @@
 			this.bottomDiv.style[prefix.css + 'transform'] = 'translateX(' + o + left + 'px) scale(' + scale +')';
 			this.bottomDiv.style.zIndex = p + 10;
 		},
-		mergeStyle: function(config) {
+		calculateStyle: function(config) {
 
-			var c = config || this.config,
+			var c = extendObj(config || {}, this.config),
 				s = styleList;
 
 			var dimension = sizeConst * sanitizeSize(c.size);
 
-			if (!c.animationDuration) {
-				this.config.speed = c.speed;
-			}
-
 			s.spinnerInner.width = s.spinnerInner.height = dimension + 'px';
 			s.spinnerInner.marginLeft = s.spinnerInner.marginTop = '-' + (parseInt(dimension) / 2) + 'px';
-			s.top.animationDuration = s.bottom.animationDuration = this.config.animationDuration;
+			s.top.animationDuration = s.bottom.animationDuration = speedMap[c.speed];
 			s.top.background = c.topColor;
 			s.bottom.background = c.bottomColor;
 
@@ -346,7 +325,6 @@
 					'100% {' + p + 'transform: scale(0.4) translateX(0px);}' +
 				'}'
 			, sheet.cssRules.length);
-			console.log(sheet);
 		},
 		removeKeyframes: function() {
 
@@ -360,7 +338,7 @@
 		},
 		updateStyle: function(config) {
 
-			this.mergeStyle(config).removeKeyframes().spin();
+			this.calculateStyle(config);
 
 		}
 	};

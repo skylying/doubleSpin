@@ -13,6 +13,37 @@
 	margin-bottom: 2em;
 }
 
+.size-meter {
+	height: 34px;
+}
+
+.line {
+	border-top: 1px solid #675E5E;
+	position: absolute;
+	width: 100px;
+	margin-top: 17px;
+}
+
+.indicator {
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	border: 1px solid #ccc;
+	border-radius: 2px;
+	background: #F5F5F5;
+	margin-top: 7px;
+	left: 95px;
+}
+
+.indicator:hover {
+	cursor: pointer;
+	background: #E4E3E3;
+}
+
+input[type="color"] {
+	margin-top: 5px;
+}
+
 .well {
 	height: 150px;
 }

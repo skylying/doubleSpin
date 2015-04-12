@@ -23,8 +23,11 @@
 				<form class="form-horizontal">
 					<div class="form-group">
 						<label for="size" class="col-md-2 control-label">Size</label>
-						<div class="col-md-4">
-							<input id="size" type="text" class="form-control" value="100" />
+						<div class="col-md-5">
+							<div class="size-meter">
+								<div class="line"></div>
+								<div id="indicator" class="indicator"></div>
+							</div>
 						</div>
 					</div>
 					<div class="form-group">
@@ -46,15 +49,17 @@
 			<div class="col-md-4">
 				<form class="form-horizontal">
 					<div class="form-group">
-						<label for="top-color" class="col-md-4 control-label">Top Color</label>
-						<div class="col-md-2">
-							<input id="top-color" type="color" value="#FF0000">
+						<label for="topColor" class="col-md-4 control-label">Top Color</label>
+						<div class="col-md-5">
+							<input id="topColor" type="color" value="#ff0000">
+							<span>#ff0000</span>
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="bottom-color" class="col-md-4 control-label">Bottom Color</label>
-						<div class="col-md-2">
-							<input id="bottom-color" type="color" value="#008000" />
+						<label for="bottomColor" class="col-md-4 control-label">Bottom Color</label>
+						<div class="col-md-5">
+							<input id="bottomColor" type="color" value="#008000" />
+							<span>#008000</span>
 						</div>
 					</div>					
 				</form>
@@ -80,6 +85,9 @@
 
 	window.onload = function() {
 
+		var spinner = new DoubleSpin(document.getElementById('spinner'), defaultConfig);
+
+		var isHolding = false;
 		var defaultConfig = (function() {
 			return {
 				size: 1,
@@ -89,24 +97,81 @@
 			};
 		}());
 
-		var spinner = new DoubleSpin(document.getElementById('spinner'), defaultConfig);
+		function draggable()
+		{
+			var indicator = document.getElementById('indicator');
 
-		// Convert nodelist
+			indicator.addEventListener('mousedown', function(e) {
+				isHolding = true;
+			});
+
+			document.addEventListener('mousemove', function(e) {
+
+				if (e.target !== indicator) {
+					isHolding = false;
+					return;
+				}
+
+				if (e.target == indicator && isHolding) {
+
+					var parentLeft = e.target.parentNode.getBoundingClientRect().left,
+						result = (e.x - parentLeft + 5);
+
+					if (result <= 15) {
+						indicator.style.left = 15 + 'px';
+					} else if (result >= 95) {
+						indicator.style.left = 95 + 'px';
+					} else {
+						indicator.style.left = result + 'px';
+					}
+
+					var percent = result / 80;
+					spinner.updateStyle({size: percent});
+				}
+			});
+
+			indicator.addEventListener('mouseup', function() {
+				isHolding = false;
+			});
+		}
+
+		// Handle radio inputs
 		Array.prototype.slice.call(document.getElementsByName('speed')).forEach(function(radio) {
+			
 			radio.addEventListener('change', function() {
-				var config = defaultConfig;
-				config.speed = this.value;
-				spinner.updateStyle({
-					size: 0.5,
-					topColor: '#ddd',
-					bottomColor: '#008000',
-					speed: 'fast'
-				});
+
+				// Update speed
+				spinner.updateStyle({speed: this.value});
 			})
 		});
 
+		// Handle color pickers
+		Array.prototype.slice.call(document.querySelectorAll('input[type="color"]')).forEach(function(input) {
+
+			input.addEventListener('change', function() {
+
+				var config = {},
+					topColor = document.getElementById('topColor').value,
+					bottomColor = document.getElementById('bottomColor').value;
+
+				config['topColor'] = topColor;
+				config['bottomColor'] = bottomColor;
+
+				spinner.updateStyle(config);
+
+				// Update span text
+				this.nextElementSibling.innerText = this.value;
+
+			})
+		})
+
+		// Init draggable indicator
+		draggable();
+
 		// Start spin
 		spinner.spin();
+
+		
 
 	};
 
